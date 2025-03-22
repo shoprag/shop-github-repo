@@ -43,8 +43,8 @@ In your ShopRAG project directory, add this Shop to your `shoprag.json` file und
         "repoUrl": "https://github.com/user/repo",
         "branch": "main",
         "updateInterval": "1d",
-        "include": "[\"**/*.md\", \"**/*.txt\"]",
-        "ignore": "[\"node_modules/**\", \".github/**\"]"
+        "include": ["**/*.md", "**/*.txt"],
+        "ignore": ["node_modules/**", ".github/**"]
       }
     }
   ],
