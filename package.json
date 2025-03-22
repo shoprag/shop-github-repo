@@ -4,6 +4,7 @@
     "description": "A ShopRAG plugin for fetching files from a GitHub repository",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "type": "module",
     "scripts": {
         "build": "tsc"
     },
@@ -16,7 +17,7 @@
     "license": "MIT",
     "dependencies": {
         "@octokit/rest": "^21.1.1",
-        "@shoprag/core": "^1.0.0",
+        "@shoprag/core": "^1.0.4",
         "minimatch": "^10.0.1"
     },
     "devDependencies": {
