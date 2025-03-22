@@ -1,10 +1,10 @@
-import { Shop } from '@shoprag/core';
+import { Shop, JsonObject } from '@shoprag/core';
 import { Octokit } from '@octokit/rest';
 import { minimatch } from 'minimatch';
 
 export default class GitHubRepoShop implements Shop {
     private octokit: Octokit;
-    private config: { [key: string]: string };
+    private config: JsonObject;
     private updateIntervalMs: number;
 
     requiredCredentials(): { [credentialName: string]: string } {
@@ -17,7 +17,7 @@ export default class GitHubRepoShop implements Shop {
         };
     }
 
-    async init(credentials: { [key: string]: string }, config: { [key: string]: string }): Promise<void> {
+    async init(credentials: { [key: string]: string }, config: JsonObject): Promise<void> {
         this.config = config;
         const token = credentials['github_token'];
         if (!token) {
@@ -26,7 +26,7 @@ export default class GitHubRepoShop implements Shop {
         this.octokit = new Octokit({ auth: token });
 
         const interval = config['updateInterval'] || '1d';
-        this.updateIntervalMs = this.parseInterval(interval);
+        this.updateIntervalMs = this.parseInterval(interval as string);
     }
 
     private parseInterval(interval: string): number {
@@ -42,7 +42,7 @@ export default class GitHubRepoShop implements Shop {
     }
 
     private getRepoInfo(): { owner: string; repo: string } {
-        const url = this.config['repoUrl'];
+        const url = this.config['repoUrl'] as string;
         const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
         if (!match) {
             throw new Error(`Invalid GitHub repo URL: ${url}`);
@@ -52,19 +52,19 @@ export default class GitHubRepoShop implements Shop {
 
     private async getRepoTree(): Promise<any> {
         const { owner, repo } = this.getRepoInfo();
-        const branch = this.config['branch'] || 'main';
+        const branch = this.config['branch'] as string || 'master';
         const response = await this.octokit.git.getTree({
             owner,
             repo,
             tree_sha: branch,
-            recursive: "true"
+            recursive: 'true'
         });
         return response.data.tree;
     }
 
     private shouldInclude(path: string): boolean {
-        const includePatterns = this.config['include'] ? JSON.parse(this.config['include']) : ['**/*'];
-        const ignorePatterns = this.config['ignore'] ? JSON.parse(this.config['ignore']) : [];
+        const includePatterns = this.config['include'] ? this.config['include'] as string[] : ['**/*'];
+        const ignorePatterns = this.config['ignore'] ? this.config['ignore'] as string[] : [];
         const isIncluded = includePatterns.some((pattern: string) => minimatch(path, pattern));
         const isIgnored = ignorePatterns.some((pattern: string) => minimatch(path, pattern));
         return isIncluded && !isIgnored;
@@ -98,7 +98,7 @@ export default class GitHubRepoShop implements Shop {
 
     private async getLastCommitTimeForFile(path: string): Promise<number> {
         const { owner, repo } = this.getRepoInfo();
-        const branch = this.config['branch'] || 'main';
+        const branch = this.config['branch'] as string || 'master';
         const response = await this.octokit.repos.listCommits({
             owner,
             repo,
