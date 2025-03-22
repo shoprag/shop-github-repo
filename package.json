@@ -1,6 +1,6 @@
 {
     "name": "@shoprag/shop-github-repo",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "A ShopRAG plugin for fetching files from a GitHub repository",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
