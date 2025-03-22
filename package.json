@@ -1,0 +1,26 @@
+{
+    "name": "@shoprag/shop-github-repo",
+    "version": "1.0.0",
+    "description": "A ShopRAG plugin for fetching files from a GitHub repository",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "keywords": [
+        "shoprag",
+        "shop",
+        "plugin"
+    ],
+    "author": "Peer-to-peer Privacy Systems Research, LLC",
+    "license": "MIT",
+    "dependencies": {
+        "@octokit/rest": "^21.1.1",
+        "@shoprag/core": "^1.0.0",
+        "minimatch": "^10.0.1"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.11",
+        "typescript": "^5.8.2"
+    }
+}
