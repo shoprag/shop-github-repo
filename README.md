@@ -1,6 +1,6 @@
 # `@shoprag/shop-github-repo`
 
-This is a Shop plugin for [ShopRAG](https://github.com/shoprag/core), designed to fetch and synchronize files from a GitHub repository. It integrates seamlessly with ShopRAG's data pipeline, allowing you to pull files from a specified repository, apply filters, and keep your local dataset up-to-date with changes from GitHub.
+This is a Shop plugin for [ShopRAG](https://github.com/shoprag/core), designed to fetch and synchronize files from a GitHub repository. It integrates seamlessly with ShopRAG's data pipeline, allowing you to pull files from a specified repository, apply filters, optionally add metadata headers, and keep your local dataset up-to-date with changes from GitHub.
 
 ---
 
@@ -10,6 +10,7 @@ This is a Shop plugin for [ShopRAG](https://github.com/shoprag/core), designed t
 - **Filtering with include/ignore globs**: Use patterns like `**/*.md` to include only certain files or exclude others (e.g., `node_modules/**`).
 - **Efficient updates**: Only fetches and updates files that have changed since the last run, based on commit timestamps.
 - **Update interval control**: Define how often the Shop checks for updates (e.g., every hour, day, or week).
+- **Optional Content Header**: Automatically prepend metadata (repo details, file path, permalink URL, modification date) to the fetched file content.
 - **First-run support**: Automatically adds all filtered files from the repo on the initial run.
 
 ---
@@ -40,7 +41,7 @@ In your ShopRAG project directory, add this Shop to your `shoprag.json` file und
     {
       "from": "github-repo",
       "config": {
-        "repoUrl": "https://github.com/user/repo",
+        "repoUrl": "https://github.com/your-org/your-repo",
         "branch": "main",
         "updateInterval": "1d",
         "include": ["**/*.md", "**/*.txt"],
@@ -55,6 +56,7 @@ In your ShopRAG project directory, add this Shop to your `shoprag.json` file und
         "outputDir": "./data"
       }
     }
+    // ... potentially other RAGs
   ]
 }
 ```
@@ -89,17 +91,38 @@ The plugin will:
 
 ## Configuration Options
 
-The following options can be specified in the `config` object of your `shoprag.json`:
+The following options can be specified in the `config` object for the `github-repo` shop in your `shoprag.json`:
 
-| Option          | Description                                                                 | Default       |
-|-----------------|-----------------------------------------------------------------------------|---------------|
-| `repoUrl`       | The URL of the GitHub repository (e.g., `https://github.com/user/repo`).    | **Required**  |
-| `branch`        | The branch to fetch files from.                                             | `"main"`      |
-| `updateInterval`| How often to check for updates (e.g., `1h` for hourly, `1d` for daily).     | `"1d"`        |
-| `include`       | JSON array of glob patterns to include files (e.g., `["**/*.md"]`).         | `["**/*"]`    |
-| `ignore`        | JSON array of glob patterns to exclude files (e.g., `["node_modules/**"]`). | `[]`          |
+| Option          | Description                                                                                                         | Type                    | Default       | Required     |
+|-----------------|---------------------------------------------------------------------------------------------------------------------|-------------------------|---------------|--------------|
+| `repoUrl`       | The HTTPS URL of the GitHub repository (e.g., `https://github.com/user/repo`).                                      | `string`                | -             | **Yes**      |
+| `branch`        | The branch, tag, or commit SHA to fetch files from.                                                                 | `string`                | `"main"`      | No           |
+| `updateInterval`| Minimum time between update checks (e.g., `5m`, `1h`, `1d`, `1w` for minutes, hours, days, weeks).                     | `string`                | `"1d"`        | No           |
+| `include`       | Glob patterns or array of glob patterns specifying files to include. Uses [minimatch](https://github.com/isaacs/minimatch). | `string` \| `string[]`  | `["**/*"]`    | No           |
+| `ignore`        | Glob patterns or array of glob patterns specifying files to exclude. Exclusions override inclusions.                    | `string` \| `string[]`  | `[]`          | No           |
+| `includeHeader` | If `true`, prepend a metadata header to the content of each fetched file. See format below.                           | `boolean`               | `true`        | No           |
 
-**Note**: Since ShopRAG's `config` expects string values, arrays like `include` and `ignore` must be written as JSON strings (e.g., `"[**/*.md]"`).
+### Header Format (`includeHeader: true`)
+
+When `includeHeader` is enabled, the content passed to the RAG will look like this:
+
+```
+File from the GitHub Repo ${owner}/${repo}
+Path: ${pathInRepo}
+Repo URL: ${repoURL}
+File URL (permalink): ${fileURL}
+Date modified: ${isoTimestamp}
+----------
+${originalFileContent}
+[end of ${pathInRepo}]
+```
+
+- `${owner}/${repo}`: Repository owner and name.
+- `${pathInRepo}`: Full path to the file within the repository.
+- `${repoURL}`: The base URL of the repository provided in `repoUrl`.
+- `${fileURL}`: A permalink URL pointing to the specific version (commit SHA) of the file on GitHub.
+- `${isoTimestamp}`: The ISO 8601 timestamp of the last commit that modified the file.
+- `${originalFileContent}`: The actual content of the file.
 
 ---
 
